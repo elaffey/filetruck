@@ -1,16 +1,28 @@
 use argh::FromArgs;
-use serde::Deserialize;
-use std::error::Error;
+
+mod drop_off;
+mod pick_up;
+mod plan;
+
+use plan::Plan;
 
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand, name = "pickup")]
 /// Pick up files
-struct PickUp {}
+struct PickUp {
+    #[argh(option)]
+    /// where to pick the files up from
+    from: String,
+}
 
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand, name = "dropoff")]
 /// Drop off files
-struct DropOff {}
+struct DropOff {
+    #[argh(option)]
+    /// where to drop the files off to
+    to: String,
+}
 
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand)]
@@ -30,34 +42,12 @@ struct Args {
     sub_commands: SubCommands,
 }
 
-#[derive(Debug, Deserialize)]
-struct Plan {
-    name: String,
-    files: Vec<String>,
-}
-
-impl Plan {
-    fn load(path: String) -> Result<Self, Box<dyn Error>> {
-        let yaml_str = std::fs::read_to_string(path)?;
-        let ret: Self = serde_yaml::from_str(&yaml_str)?;
-        Ok(ret)
-    }
-}
-
-fn pick_up(plan: Plan) {
-    println!("We are copying   {:?}", plan)
-}
-
-fn drop_off(plan: Plan) {
-    println!("We are pasting   {:?}", plan)
-}
-
 fn main() {
     let args: Args = argh::from_env();
     match Plan::load(args.plan) {
         Ok(config) => match args.sub_commands {
-            SubCommands::PickUp(_) => pick_up(config),
-            SubCommands::DropOff(_) => drop_off(config),
+            SubCommands::PickUp(options) => pick_up::pick_up(config, options.from),
+            SubCommands::DropOff(options) => drop_off::drop_off(config, options.to),
         },
         Err(e) => {
             eprintln!("Could not load config");
