@@ -1,9 +1,9 @@
 use argh::FromArgs;
 
-mod drop_off;
-mod pick_up;
+mod ops;
 mod plan;
 
+use ops::{drop_off, pick_up};
 use plan::Plan;
 
 #[derive(FromArgs, PartialEq, Debug)]
@@ -32,7 +32,7 @@ enum SubCommands {
 }
 
 #[derive(FromArgs, PartialEq, Debug)]
-/// Create, apply, and undo database migrations
+/// Beep beep. Truck to move file freight around.
 struct Args {
     #[argh(option)]
     /// where to read the plan from
@@ -45,10 +45,19 @@ struct Args {
 fn main() {
     let args: Args = argh::from_env();
     match Plan::load(args.plan) {
-        Ok(config) => match args.sub_commands {
-            SubCommands::PickUp(options) => pick_up::pick_up(config, options.from),
-            SubCommands::DropOff(options) => drop_off::drop_off(config, options.to),
-        },
+        Ok(config) => {
+            let res = match args.sub_commands {
+                SubCommands::PickUp(options) => pick_up(config, options.from),
+                SubCommands::DropOff(options) => drop_off(config, options.to),
+            };
+            match res {
+                Ok(_) => {}
+                Err(e) => {
+                    eprintln!("Got error here");
+                    eprintln!("{}", e);
+                }
+            }
+        }
         Err(e) => {
             eprintln!("Could not load config");
             eprintln!("{:?}", e);

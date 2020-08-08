@@ -1,5 +1,5 @@
 name: common
 files:
-  - ~/.zshrc
-  - ~/.config/nvim/init.vim
-  - ~/.config/alacritty/alacritty.yml
+  - .zshrc
+  - .config/nvim/init.vim
+  - .config/alacritty/alacritty.yml
