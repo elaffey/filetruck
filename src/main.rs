@@ -44,7 +44,7 @@ struct Args {
 
 fn main() {
     let args: Args = argh::from_env();
-    match Plan::load(args.plan) {
+    match Plan::load(&args.plan) {
         Ok(config) => {
             let res = match args.sub_commands {
                 SubCommands::PickUp(options) => pick_up(config, options.from),
@@ -53,15 +53,12 @@ fn main() {
             match res {
                 Ok(_) => {}
                 Err(e) => {
-                    eprintln!("Got error here");
-                    eprintln!("{}", e);
+                    eprintln!("ERROR: {}", e);
                 }
             }
         }
         Err(e) => {
-            eprintln!("Could not load config");
-            eprintln!("{:?}", e);
+            eprintln!("ERROR: Coult not load plan {} - {}", args.plan, e);
         }
     }
-    println!("Done");
 }

@@ -1,5 +1,4 @@
 use std::env;
-use std::error::Error;
 use std::path::{Path, PathBuf};
 
 use super::plan::Plan;
@@ -10,25 +9,37 @@ fn append(path: &Path, dir_name: &str) -> PathBuf {
     path_buf
 }
 
-fn copy(files: &Vec<String>, input: &Path, output: &Path) -> Result<(), Box<dyn Error>> {
+fn copy(files: &Vec<String>, input: &Path, output: &Path) -> std::io::Result<()> {
     for file in files {
-        let a = append(input, &file).canonicalize()?;
-        if !a.is_file() {
-            eprintln!("{:?} is not a file", a);
-            let msg = "input is not a file".to_string();
-            return Err(msg.into());
-        }
-        let b = append(output, &file);
-        let b_parent = b.parent().ok_or("Could not get parent")?;
-        std::fs::create_dir_all(b_parent)?;
+        let a = append(input, &file);
+        match a.canonicalize() {
+            Ok(a) => {
+                if !a.is_file() {
+                    eprintln!("ERROR: {} is not a file", a.display());
+                    break;
+                }
+                let b = append(output, &file);
+                match b.parent() {
+                    Some(b_parent) => {
+                        std::fs::create_dir_all(b_parent)?;
 
-        println!("{} -> {}", a.display(), b.display());
-        std::fs::copy(a, b)?;
+                        println!("{} -> {}", a.display(), b.display());
+                        std::fs::copy(a, b)?;
+                    }
+                    None => {
+                        eprintln!("ERROR: Could not get parent of {}", b.display());
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!("ERROR: Error reading file {} - {}", a.display(), e);
+            }
+        }
     }
     Ok(())
 }
 
-pub fn pick_up(plan: Plan, from: String) -> Result<(), Box<dyn Error>> {
+pub fn pick_up(plan: Plan, from: String) -> std::io::Result<()> {
     let cur_dir = env::current_dir()?;
     let output = append(&cur_dir, &plan.name);
     let output = output.as_path();
@@ -40,7 +51,7 @@ pub fn pick_up(plan: Plan, from: String) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn drop_off(plan: Plan, to: String) -> Result<(), Box<dyn Error>> {
+pub fn drop_off(plan: Plan, to: String) -> std::io::Result<()> {
     let cur_dir = env::current_dir()?;
     let input = append(&cur_dir, &plan.name);
     let input = input.as_path();
