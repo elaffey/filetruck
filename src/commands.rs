@@ -2,7 +2,7 @@ use std::env;
 use std::path::{Path, PathBuf};
 
 use super::plan::Plan;
-use super::truck_error::TruckError;
+use super::error::Error;
 
 fn append(path: &Path, dir_name: &str) -> PathBuf {
     let mut path_buf = PathBuf::from(path);
@@ -10,30 +10,29 @@ fn append(path: &Path, dir_name: &str) -> PathBuf {
     path_buf
 }
 
-fn is_canonical(path: &Path) -> Result<(), TruckError> {
+fn canonicalize(path: &Path) -> Result<PathBuf, Error> {
     path.canonicalize()
-        .map_err(|e| TruckError::new(format!("Error reading file {} - {}", path.display(), e)))?;
-    Ok(())
+        .map_err(|e| Error::new(format!("Error reading file {} - {}", path.display(), e)))
 }
 
-fn is_file(path: &Path) -> Result<(), TruckError> {
-    is_canonical(path)?;
+fn is_file(path: &Path) -> Result<(), Error> {
+    let path = canonicalize(path)?;
     if !path.is_file() {
-        return Err(TruckError::new(format!("{} is not a file", path.display())));
+        return Err(Error::new(format!("{} is not a file", path.display())));
     }
     Ok(())
 }
 
-fn get_parent<'a>(path: &'a Path) -> Result<&'a Path, TruckError> {
-    path.parent().ok_or(TruckError::new(format!(
+fn get_parent<'a>(path: &'a Path) -> Result<&'a Path, Error> {
+    path.parent().ok_or(Error::new(format!(
         "Could not get parent of {}",
         path.display()
     )))
 }
 
-fn copy(a: &Path, b: &Path) -> Result<(), TruckError> {
+fn copy(a: &Path, b: &Path) -> Result<(), Error> {
     std::fs::copy(a, b).map_err(|e| {
-        TruckError::new(format!(
+        Error::new(format!(
             "Could not copy {} -> {} - {}",
             a.display(),
             b.display(),
@@ -43,19 +42,19 @@ fn copy(a: &Path, b: &Path) -> Result<(), TruckError> {
     Ok(())
 }
 
-fn create_dir_all(path: &Path) -> Result<(), TruckError> {
+fn create_dir_all(path: &Path) -> Result<(), Error> {
     std::fs::create_dir_all(path)
-        .map_err(|e| TruckError::new(format!("Could not create directories {}", e)))?;
+        .map_err(|e| Error::new(format!("Could not create directories {}", e)))?;
     Ok(())
 }
 
-fn create_parent_dirs(path: &Path) -> Result<(), TruckError> {
+fn create_parent_dirs(path: &Path) -> Result<(), Error> {
     let parent = get_parent(path)?;
     create_dir_all(parent)?;
     Ok(())
 }
 
-fn copy_file(file: &str, input: &Path, output: &Path) -> Result<(), TruckError> {
+fn copy_file(file: &str, input: &Path, output: &Path) -> Result<(), Error> {
     let a = append(input, file);
     is_file(&a)?;
     let b = append(output, &file);
@@ -76,11 +75,11 @@ fn copy_files(files: &Vec<String>, input: &Path, output: &Path) {
     }
 }
 
-fn current_dir() -> Result<PathBuf, TruckError> {
-    env::current_dir().map_err(|e| TruckError::new(format!("Could not get current dir {}", e)))
+fn current_dir() -> Result<PathBuf, Error> {
+    env::current_dir().map_err(|e| Error::new(format!("Could not get current dir {}", e)))
 }
 
-pub fn pick_up(plan: Plan, from: String) -> Result<(), TruckError> {
+pub fn pick_up(plan: Plan, from: String) -> Result<(), Error> {
     let cur_dir = current_dir()?;
     let output = append(&cur_dir, &plan.name);
     let output = output.as_path();
@@ -92,7 +91,7 @@ pub fn pick_up(plan: Plan, from: String) -> Result<(), TruckError> {
     Ok(())
 }
 
-pub fn drop_off(plan: Plan, to: String) -> Result<(), TruckError> {
+pub fn drop_off(plan: Plan, to: String) -> Result<(), Error> {
     let cur_dir = current_dir()?;
     let input = append(&cur_dir, &plan.name);
     let input = input.as_path();

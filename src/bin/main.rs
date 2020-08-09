@@ -2,7 +2,7 @@ use argh::FromArgs;
 
 use filetruck::commands::{drop_off, pick_up};
 use filetruck::plan::Plan;
-use filetruck::truck_error::TruckError;
+use filetruck::error::Error;
 
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand, name = "pickup")]
@@ -40,7 +40,7 @@ struct Args {
     sub_commands: SubCommands,
 }
 
-fn run(args: Args) -> Result<(), TruckError> {
+fn run(args: Args) -> Result<(), Error> {
     let plan = Plan::load(&args.plan)?;
     match args.sub_commands {
         SubCommands::PickUp(options) => pick_up(plan, options.from),
