@@ -11,9 +11,8 @@ fn append(path: &Path, dir_name: &str) -> PathBuf {
 }
 
 fn is_canonical(path: &Path) -> Result<(), TruckError> {
-    path
-    .canonicalize()
-    .map_err(|e| TruckError::new(format!("Error reading file {} - {}", path.display(), e)))?;
+    path.canonicalize()
+        .map_err(|e| TruckError::new(format!("Error reading file {} - {}", path.display(), e)))?;
     Ok(())
 }
 
@@ -46,7 +45,7 @@ fn copy(a: &Path, b: &Path) -> Result<(), TruckError> {
 
 fn create_dir_all(path: &Path) -> Result<(), TruckError> {
     std::fs::create_dir_all(path)
-    .map_err(|e| TruckError::new(format!("Could not create directories {}", e)))?;
+        .map_err(|e| TruckError::new(format!("Could not create directories {}", e)))?;
     Ok(())
 }
 
@@ -71,7 +70,7 @@ fn copy_files(files: &Vec<String>, input: &Path, output: &Path) {
         match copy_file(file, input, output) {
             Ok(_) => {}
             Err(e) => {
-                eprintln!("ERROR: {}", e);
+                eprintln!("{}", e);
             }
         }
     }

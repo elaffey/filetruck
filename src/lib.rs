@@ -1,5 +1,5 @@
 
 pub mod commands;
 pub mod plan;
-mod truck_error;
+pub mod truck_error;
 
