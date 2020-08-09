@@ -1,10 +1,7 @@
 use argh::FromArgs;
 
-mod ops;
-mod plan;
-
-use ops::{drop_off, pick_up};
-use plan::Plan;
+use filetruck::commands::{drop_off, pick_up};
+use filetruck::plan::Plan;
 
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand, name = "pickup")]
