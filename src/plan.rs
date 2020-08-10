@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use std::path::Path;
 
 use super::error::Error;
 
@@ -9,11 +10,16 @@ pub struct Plan {
 }
 
 impl Plan {
-    pub fn load(path: &str) -> Result<Self, Error> {
-        let yaml_str = std::fs::read_to_string(path)
-            .map_err(|e| Error::new(format!("Error reading plan file {} - {}", path, e)))?;
-        let ret: Self = serde_yaml::from_str(&yaml_str)
+    pub fn load(path: &Path) -> Result<Plan, Error> {
+        let yaml_str = std::fs::read_to_string(path).map_err(|e| {
+            Error::new(format!(
+                "Error reading plan file {} - {}",
+                path.display(),
+                e
+            ))
+        })?;
+        let plan: Plan = serde_yaml::from_str(&yaml_str)
             .map_err(|e| Error::new(format!("Error parsing plan {}", e)))?;
-        Ok(ret)
+        Ok(plan)
     }
 }

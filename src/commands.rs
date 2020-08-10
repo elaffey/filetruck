@@ -4,9 +4,9 @@ use std::path::{Path, PathBuf};
 use super::plan::Plan;
 use super::error::Error;
 
-fn append(path: &Path, dir_name: &str) -> PathBuf {
+fn append<P: AsRef<Path>>(path: &Path, to_append: P) -> PathBuf {
     let mut path_buf = PathBuf::from(path);
-    path_buf.push(dir_name);
+    path_buf.push(to_append);
     path_buf
 }
 
@@ -54,19 +54,19 @@ fn create_parent_dirs(path: &Path) -> Result<(), Error> {
     Ok(())
 }
 
-fn copy_file(file: &str, input: &Path, output: &Path) -> Result<(), Error> {
+fn copy_file_name(file: &str, input: &Path, output: &Path) -> Result<(), Error> {
     let a = append(input, file);
     is_file(&a)?;
-    let b = append(output, &file);
+    let b = append(output, file);
     create_parent_dirs(&b)?;
     copy(&a, &b)?;
     println!("{} -> {}", a.display(), b.display());
     Ok(())
 }
 
-fn copy_files(files: &Vec<String>, input: &Path, output: &Path) {
+fn copy_file_names(files: &Vec<String>, input: &Path, output: &Path) {
     for file in files {
-        match copy_file(file, input, output) {
+        match copy_file_name(file, input, output) {
             Ok(_) => {}
             Err(e) => {
                 eprintln!("{}", e);
@@ -79,25 +79,17 @@ fn current_dir() -> Result<PathBuf, Error> {
     env::current_dir().map_err(|e| Error::new(format!("Could not get current dir {}", e)))
 }
 
-pub fn pick_up(plan: Plan, from: String) -> Result<(), Error> {
+pub fn pick_up(plan: Plan, from: PathBuf) -> Result<(), Error> {
     let cur_dir = current_dir()?;
     let output = append(&cur_dir, &plan.name);
-    let output = output.as_path();
     create_dir_all(&output)?;
-    let input = Path::new(&from);
-
-    copy_files(&plan.files, input, output);
-
+    copy_file_names(&plan.files, &from, &output);
     Ok(())
 }
 
-pub fn drop_off(plan: Plan, to: String) -> Result<(), Error> {
+pub fn drop_off(plan: Plan, to: PathBuf) -> Result<(), Error> {
     let cur_dir = current_dir()?;
     let input = append(&cur_dir, &plan.name);
-    let input = input.as_path();
-    let output = Path::new(&to);
-
-    copy_files(&plan.files, input, output);
-
+    copy_file_names(&plan.files, &input, &to);
     Ok(())
 }

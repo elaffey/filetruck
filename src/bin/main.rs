@@ -1,40 +1,41 @@
+use std::path::PathBuf;
 use argh::FromArgs;
 
 use filetruck::commands::{drop_off, pick_up};
 use filetruck::plan::Plan;
 use filetruck::error::Error;
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(FromArgs, Debug)]
 #[argh(subcommand, name = "pickup")]
 /// Pick up files
 struct PickUp {
     #[argh(option)]
     /// where to pick the files up from
-    from: String,
+    from: PathBuf,
 }
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(FromArgs, Debug)]
 #[argh(subcommand, name = "dropoff")]
 /// Drop off files
 struct DropOff {
     #[argh(option)]
     /// where to drop the files off to
-    to: String,
+    to: PathBuf,
 }
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(FromArgs, Debug)]
 #[argh(subcommand)]
 enum SubCommands {
     PickUp(PickUp),
     DropOff(DropOff),
 }
 
-#[derive(FromArgs, PartialEq, Debug)]
+#[derive(FromArgs, Debug)]
 /// Beep beep. Truck to move file freight around.
 struct Args {
     #[argh(option)]
     /// where to read the plan from
-    plan: String,
+    plan: PathBuf,
 
     #[argh(subcommand)]
     sub_commands: SubCommands,
