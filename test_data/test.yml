@@ -1,0 +1,5 @@
+name: test
+files:
+  - a.txt
+  - b.txt
+  - subdir/c.txt
