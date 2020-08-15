@@ -31,6 +31,20 @@
       },
       "args": ["--plan", "test.yml", "pickup", "--from", "input"],
       "cwd": "${workspaceFolder}/test_data"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug pickup",
+      "cargo": {
+        "args": ["build", "--bin=main", "--package=filetruck"],
+        "filter": {
+          "name": "main",
+          "kind": "bin"
+        }
+      },
+      "args": ["--plan", "test.yml", "dropoff", "--to", "output"],
+      "cwd": "${workspaceFolder}/test_data"
     }
   ]
 }

@@ -11,8 +11,8 @@ Say we had a plan called `example.yml`
 ```yaml
 name: example # Plans are named. This is used as the directory name when storing these files
 files: # List of files. Must be files and not directories.
-    - .zshrc
-    - .config/nvim/init.vim
+  - .zshrc
+  - .config/nvim/init.vim
 ```
 
 Now we can use filetruck to pick up those files.
@@ -23,10 +23,10 @@ This will copy the files described in the plan file into a directory called "exa
 
 ```
 example.yml
-example
+example/
   .zshrc
   .config
-    nvim
+    nvim/
       init.vim
 ```
 
@@ -35,5 +35,3 @@ When you want to drop off those files again you can call
 `filetruct --plan example.plan dropoff --to ~`
 
 And the dot files will be copied back to the home directory.
-
-      

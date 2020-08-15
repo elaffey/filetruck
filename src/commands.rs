@@ -73,10 +73,29 @@ fn current_dir() -> Result<PathBuf, Error> {
     env::current_dir().map_err(|e| Error::new(format!("Could not get current dir {}", e)))
 }
 
+fn check_not_same_file(a: &Path, b: &Path) -> Result<(), Error> {
+    let is_same_file = same_file::is_same_file(a, b).map_err(|e| {
+        Error::new(format!(
+            "One of the following paths could not be opened {}, {} - {}",
+            a.display(),
+            b.display(),
+            e
+        ))
+    })?;
+    if is_same_file {
+        return Err(Error::new(format!(
+            "Input and output are the same - {}",
+            a.display()
+        )));
+    }
+    Ok(())
+}
+
 pub fn pick_up(plan: Plan, from: PathBuf) -> Result<(), Error> {
     let mut to = current_dir()?;
     to.push(&plan.name);
     create_dir_all(&to)?;
+    check_not_same_file(&from, &to)?;
     copy_file_names(&plan.files, from, to);
     Ok(())
 }
@@ -84,6 +103,7 @@ pub fn pick_up(plan: Plan, from: PathBuf) -> Result<(), Error> {
 pub fn drop_off(plan: Plan, to: PathBuf) -> Result<(), Error> {
     let mut from = current_dir()?;
     from.push(&plan.name);
+    check_not_same_file(&from, &to)?;
     copy_file_names(&plan.files, from, to);
     Ok(())
 }
