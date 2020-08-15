@@ -7,20 +7,6 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug unit tests in library 'filetruck'",
-      "cargo": {
-        "args": ["test", "--no-run", "--lib", "--package=filetruck"],
-        "filter": {
-          "name": "filetruck",
-          "kind": "lib"
-        }
-      },
-      "args": [],
-      "cwd": "${workspaceFolder}"
-    },
-    {
-      "type": "lldb",
-      "request": "launch",
       "name": "Debug pickup",
       "cargo": {
         "args": ["build", "--bin=main", "--package=filetruck"],
@@ -35,7 +21,7 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug pickup",
+      "name": "Debug dropoff",
       "cargo": {
         "args": ["build", "--bin=main", "--package=filetruck"],
         "filter": {

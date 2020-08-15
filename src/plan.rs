@@ -19,7 +19,7 @@ impl Plan {
             ))
         })?;
         let plan: Plan = serde_yaml::from_str(&yaml_str)
-            .map_err(|e| Error::new(format!("Error parsing plan {}", e)))?;
+            .map_err(|e| Error::new(format!("Error parsing plan - {}", e)))?;
         Ok(plan)
     }
 }
