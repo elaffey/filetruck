@@ -58,15 +58,11 @@ fn copy_file_name(file: &str, mut from: PathBuf, mut to: PathBuf) -> Result<(), 
     Ok(())
 }
 
-fn copy_file_names(files: &Vec<String>, from: PathBuf, to: PathBuf) {
+fn copy_file_names(files: &Vec<String>, from: PathBuf, to: PathBuf) -> Result<(), Error> {
     for file in files {
-        match copy_file_name(file, from.clone(), to.clone()) {
-            Ok(_) => {}
-            Err(e) => {
-                eprintln!("{}", e);
-            }
-        }
+        copy_file_name(file, from.clone(), to.clone())?;
     }
+    Ok(())
 }
 
 fn current_dir() -> Result<PathBuf, Error> {
@@ -96,7 +92,7 @@ pub fn pick_up(plan: Plan, from: PathBuf) -> Result<(), Error> {
     to.push(&plan.name);
     create_dir_all(&to)?;
     check_not_same_file(&from, &to)?;
-    copy_file_names(&plan.files, from, to);
+    copy_file_names(&plan.files, from, to)?;
     Ok(())
 }
 
@@ -104,6 +100,6 @@ pub fn drop_off(plan: Plan, to: PathBuf) -> Result<(), Error> {
     let mut from = current_dir()?;
     from.push(&plan.name);
     check_not_same_file(&from, &to)?;
-    copy_file_names(&plan.files, from, to);
+    copy_file_names(&plan.files, from, to)?;
     Ok(())
 }
