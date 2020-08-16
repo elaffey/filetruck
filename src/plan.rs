@@ -20,6 +20,13 @@ impl Plan {
         })?;
         let plan: Plan = serde_yaml::from_str(&yaml_str)
             .map_err(|e| Error::new(format!("Error parsing plan - {}", e)))?;
+
+        for file in &plan.files {
+            if file.contains("../") || file.contains("/..") {
+                return Err(Error::new(format!("Files cannot contain .. - {}", file)));
+            }
+        }
+
         Ok(plan)
     }
 }

@@ -58,7 +58,7 @@ fn copy_file_name(file: &str, mut from: PathBuf, mut to: PathBuf) -> Result<(), 
     Ok(())
 }
 
-fn copy_file_names(files: &Vec<String>, from: PathBuf, to: PathBuf) -> Result<(), Error> {
+fn copy_file_names(files: &[String], from: PathBuf, to: PathBuf) -> Result<(), Error> {
     for file in files {
         copy_file_name(file, from.clone(), to.clone())?;
     }

@@ -29,9 +29,31 @@ impl TempFile {
 }
 
 #[test]
+fn test_load_plan() {
+    let plan = "
+    name: test
+    files:
+      - a.txt
+      - b.txt
+      - subdir/c.txt
+    ";
+    let temp = TempFile::new("plan1.yml", plan);
+
+    let res = Plan::load(temp.path());
+    assert!(res.is_ok());
+    let plan = res.unwrap();
+    assert_eq!(plan.name, "test");
+    assert_eq!(plan.files.len(), 3);
+    assert_eq!(plan.files[0], "a.txt");
+    assert_eq!(plan.files[1], "b.txt");
+    assert_eq!(plan.files[2], "subdir/c.txt");
+}
+
+#[test]
 fn test_load_plan_error_reading_file() {
     let name = "idontexist.yml";
     let path = Path::new(name);
+
     let res = Plan::load(path);
     assert!(res.is_err());
     let msg = res.unwrap_err().to_string();
@@ -47,8 +69,8 @@ fn test_load_plan_error_parsing() {
       - b.txt
       - subdir/c.txt
     ";
-    let name = "a.yml";
-    let temp = TempFile::new(name, plan);
+    let temp = TempFile::new("plan2.yml", plan);
+
     let res = Plan::load(temp.path());
     assert!(res.is_err());
     let msg = res.unwrap_err().to_string();
@@ -56,22 +78,18 @@ fn test_load_plan_error_parsing() {
 }
 
 #[test]
-fn test_load_plan() {
+fn test_load_plan_invalid_file() {
     let plan = "
     name: test
     files:
       - a.txt
       - b.txt
-      - subdir/c.txt
+      - ../c.txt
     ";
-    let name = "b.yml";
-    let temp = TempFile::new(name, plan);
+    let temp = TempFile::new("plan3.yml", plan);
+
     let res = Plan::load(temp.path());
-    assert!(res.is_ok());
-    let plan = res.unwrap();
-    assert_eq!(plan.name, "test");
-    assert_eq!(plan.files.len(), 3);
-    assert_eq!(plan.files[0], "a.txt");
-    assert_eq!(plan.files[1], "b.txt");
-    assert_eq!(plan.files[2], "subdir/c.txt");
+    assert!(res.is_err());
+    let msg = res.unwrap_err().to_string();
+    assert!(msg.starts_with("Files cannot contain .."));
 }
