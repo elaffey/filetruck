@@ -1,9 +1,9 @@
-use std::path::PathBuf;
 use argh::FromArgs;
+use std::path::PathBuf;
 
 use filetruck::commands::{drop_off, pick_up};
-use filetruck::plan::Plan;
 use filetruck::error::Error;
+use filetruck::plan::Plan;
 
 #[derive(FromArgs, Debug)]
 #[argh(subcommand, name = "pickup")]
