@@ -32,8 +32,42 @@ enum SubCommands {
     DropOff(DropOff),
 }
 
-fn default_color() -> String {
-    "auto".to_string()
+#[derive(Debug)]
+enum ColorOption {
+    Auto,
+    Always,
+    Never,
+    AlwaysAnsi,
+}
+
+impl std::str::FromStr for ColorOption {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "always" => Ok(ColorOption::Always),
+            "ansi" => Ok(ColorOption::AlwaysAnsi),
+            "auto" => {
+                if atty::is(atty::Stream::Stdout) {
+                    Ok(ColorOption::Auto)
+                } else {
+                    Ok(ColorOption::Never)
+                }
+            }
+            "never" => Ok(ColorOption::Never),
+            _ => Err(Error::new(format!("Unrecognized color option {}", s))),
+        }
+    }
+}
+
+impl ColorOption {
+    fn into_color_choice(&self) -> ColorChoice {
+        match self {
+            ColorOption::Always => ColorChoice::Always,
+            ColorOption::AlwaysAnsi => ColorChoice::AlwaysAnsi,
+            ColorOption::Auto => ColorChoice::Auto,
+            ColorOption::Never => ColorChoice::Never,
+        }
+    }
 }
 
 #[derive(FromArgs, Debug)]
@@ -43,9 +77,9 @@ struct Args {
     /// where to read the plan from
     plan: PathBuf,
 
-    #[argh(option, default = "default_color()")]
+    #[argh(option, default = "ColorOption::Auto")]
     /// allow color output? Available options: always, ansi, auto. Default is auto
-    color: String,
+    color: ColorOption,
 
     #[argh(subcommand)]
     sub_commands: SubCommands,
@@ -59,24 +93,9 @@ fn run(args: Args) -> Result<(), Error> {
     }
 }
 
-fn get_color_choice(args: &Args) -> ColorChoice {
-    match args.color.as_str() {
-        "always" => ColorChoice::Always,
-        "ansi" => ColorChoice::AlwaysAnsi,
-        "auto" => {
-            if atty::is(atty::Stream::Stdout) {
-                ColorChoice::Auto
-            } else {
-                ColorChoice::Never
-            }
-        }
-        _ => ColorChoice::Never,
-    }
-}
-
 fn main() {
     let args: Args = argh::from_env();
-    let choice = get_color_choice(&args);
+    let choice = args.color.into_color_choice();
     let mut color_spec = ColorSpec::new();
     color_spec
         .set_fg(Some(Color::Red))
