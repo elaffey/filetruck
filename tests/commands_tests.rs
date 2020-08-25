@@ -46,7 +46,7 @@ fn test_pick_up() {
     dir.add_file("b");
     dir.add_file("c");
 
-    let res = pick_up(plan, PathBuf::from(&dir.path));
+    let res = pick_up(&plan, &dir.path);
     assert!(res.is_ok());
     std::fs::remove_dir_all("plan1").unwrap();
 }
@@ -59,7 +59,7 @@ fn test_pick_up_same_file() {
     };
     let dir = TempDir::new("plan2");
 
-    let res = pick_up(plan, PathBuf::from(&dir.path));
+    let res = pick_up(&plan, &PathBuf::from(&dir.path));
     assert!(res.is_err());
     let msg = res.unwrap_err().to_string();
     assert!(msg.starts_with("Input and output are the same"));
@@ -71,8 +71,9 @@ fn test_pick_up_create_dir_error() {
         name: "/badpath".to_string(),
         files: vec![],
     };
+    let from = PathBuf::from("anywhere");
 
-    let res = pick_up(plan, PathBuf::from("anywhere"));
+    let res = pick_up(&plan, &from);
     assert!(res.is_err());
     let msg = res.unwrap_err().to_string();
     assert!(msg.starts_with("Could not create directories"));
@@ -89,7 +90,7 @@ fn test_pick_up_not_a_file() {
     dir.add_file("b");
     dir.add_dir("c");
 
-    let res = pick_up(plan, PathBuf::from(&dir.path));
+    let res = pick_up(&plan, &dir.path);
     assert!(res.is_err());
     let msg = res.unwrap_err().to_string();
     assert!(msg.ends_with("is not a file"));
@@ -106,7 +107,7 @@ fn test_pick_up_error_reading_file() {
     dir.add_file("a");
     dir.add_file("b");
 
-    let res = pick_up(plan, PathBuf::from(&dir.path));
+    let res = pick_up(&plan, &dir.path);
     assert!(res.is_err());
     let msg = res.unwrap_err().to_string();
     assert!(msg.starts_with("Error reading file"));
@@ -125,7 +126,7 @@ fn test_drop_off() {
     pickup.add_file("c");
     let dropoff = TempDir::new("dropoff1");
 
-    let res = drop_off(plan, PathBuf::from(&dropoff.path));
+    let res = drop_off(&plan, &dropoff.path);
     assert!(res.is_ok());
 }
 
@@ -136,8 +137,9 @@ fn test_drop_off_same_file_doesnt_exist() {
         name: "plan7".to_string(),
         files: vec![],
     };
+    let from = PathBuf::from("plan7");
 
-    let res = drop_off(plan, PathBuf::from("plan7"));
+    let res = drop_off(&plan, &from);
     assert!(res.is_err());
     let msg = res.unwrap_err().to_string();
     assert!(msg.starts_with("One of the following paths could not be opened"));

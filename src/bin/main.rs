@@ -1,3 +1,5 @@
+#![deny(clippy::all)]
+
 use argh::FromArgs;
 use std::io::Write;
 use std::path::PathBuf;
@@ -7,6 +9,7 @@ use filetruck::commands::{drop_off, pick_up};
 use filetruck::error::Error;
 use filetruck::plan::Plan;
 
+#[allow(clippy::default_trait_access)]
 #[derive(FromArgs, Debug)]
 #[argh(subcommand, name = "pickup")]
 /// Pick up files
@@ -16,6 +19,7 @@ struct PickUp {
     from: PathBuf,
 }
 
+#[allow(clippy::default_trait_access)]
 #[derive(FromArgs, Debug)]
 #[argh(subcommand, name = "dropoff")]
 /// Drop off files
@@ -60,7 +64,7 @@ impl std::str::FromStr for ColorOption {
 }
 
 impl ColorOption {
-    fn into_color_choice(&self) -> ColorChoice {
+    fn make_color_choice(&self) -> ColorChoice {
         match self {
             ColorOption::Always => ColorChoice::Always,
             ColorOption::AlwaysAnsi => ColorChoice::AlwaysAnsi,
@@ -70,6 +74,7 @@ impl ColorOption {
     }
 }
 
+#[allow(clippy::default_trait_access)]
 #[derive(FromArgs, Debug)]
 /// Beep beep. Truck to move file freight around.
 struct Args {
@@ -88,26 +93,47 @@ struct Args {
 fn run(args: Args) -> Result<(), Error> {
     let plan = Plan::load(&args.plan)?;
     match args.sub_commands {
-        SubCommands::PickUp(options) => pick_up(plan, options.from),
-        SubCommands::DropOff(options) => drop_off(plan, options.to),
+        SubCommands::PickUp(options) => pick_up(&plan, &options.from),
+        SubCommands::DropOff(options) => drop_off(&plan, &options.to),
     }
 }
 
-fn main() {
-    let args: Args = argh::from_env();
-    let choice = args.color.into_color_choice();
+fn make_stderr(color: &ColorOption) -> StandardStream {
+    let choice = color.make_color_choice();
     let mut color_spec = ColorSpec::new();
     color_spec
         .set_fg(Some(Color::Red))
         .set_intense(true)
         .set_bold(true);
     let mut stderr = StandardStream::stderr(choice);
-    stderr.set_color(&color_spec).unwrap();
+    let result = stderr.set_color(&color_spec);
+    match result {
+        Err(e) => {
+            eprintln!("Error setting terminal color {}", e);
+        }
+        _ => {}
+    }
+    stderr
+}
+
+fn write(stream: &mut StandardStream, s: impl std::fmt::Display) {
+    let result = writeln!(stream, "{}", s);
+    match result {
+        Err(e) => {
+            eprintln!("Error writing to terminal {}", e);
+        }
+        _ => {}
+    }
+}
+
+fn main()  {
+    let args: Args = argh::from_env();
+    let mut stderr = make_stderr(&args.color);
 
     match run(args) {
         Ok(_) => {}
         Err(e) => {
-            writeln!(&mut stderr, "{}", e).unwrap();
+            write(&mut stderr, e);
             std::process::exit(1);
         }
     }
