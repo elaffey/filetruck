@@ -106,35 +106,23 @@ fn make_stderr(color: &ColorOption) -> StandardStream {
         .set_intense(true)
         .set_bold(true);
     let mut stderr = StandardStream::stderr(choice);
-    let result = stderr.set_color(&color_spec);
-    match result {
-        Err(e) => {
-            eprintln!("Error setting terminal color {}", e);
-        }
-        _ => {}
+    if let Err(e) = stderr.set_color(&color_spec) {
+        eprintln!("Error setting terminal color {}", e);
     }
     stderr
 }
 
 fn write(stream: &mut StandardStream, s: impl std::fmt::Display) {
-    let result = writeln!(stream, "{}", s);
-    match result {
-        Err(e) => {
-            eprintln!("Error writing to terminal {}", e);
-        }
-        _ => {}
+    if let Err(e) = writeln!(stream, "{}", s) {
+        eprintln!("Error writing to terminal {}", e);
     }
 }
 
 fn main() {
     let args: Args = argh::from_env();
     let mut stderr = make_stderr(&args.color);
-
-    match run(args) {
-        Ok(_) => {}
-        Err(e) => {
-            write(&mut stderr, e);
-            std::process::exit(1);
-        }
+    if let Err(e) = run(args) {
+        write(&mut stderr, e);
+        std::process::exit(1);
     }
 }
