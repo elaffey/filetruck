@@ -4,7 +4,7 @@ pub struct Error {
 }
 
 impl Error {
-    #[must_use] 
+    #[must_use]
     pub fn new(details: String) -> Error {
         Error { details }
     }

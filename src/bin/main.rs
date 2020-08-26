@@ -126,7 +126,7 @@ fn write(stream: &mut StandardStream, s: impl std::fmt::Display) {
     }
 }
 
-fn main()  {
+fn main() {
     let args: Args = argh::from_env();
     let mut stderr = make_stderr(&args.color);
 

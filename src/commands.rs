@@ -18,10 +18,8 @@ fn is_file(path: &Path) -> Result<(), Error> {
 }
 
 fn get_parent(path: &Path) -> Result<&Path, Error> {
-    path.parent().ok_or_else(|| Error::new(format!(
-        "Could not get parent of {}",
-        path.display()
-    )))
+    path.parent()
+        .ok_or_else(|| Error::new(format!("Could not get parent of {}", path.display())))
 }
 
 fn copy(a: &Path, b: &Path) -> Result<(), Error> {
