@@ -98,14 +98,13 @@ fn run(args: Args) -> Result<(), Error> {
     }
 }
 
-fn make_stderr(color: &ColorOption) -> StandardStream {
-    let choice = color.make_color_choice();
+fn make_stderr(color_choice: ColorChoice) -> StandardStream {
     let mut color_spec = ColorSpec::new();
     color_spec
         .set_fg(Some(Color::Red))
         .set_intense(true)
         .set_bold(true);
-    let mut stderr = StandardStream::stderr(choice);
+    let mut stderr = StandardStream::stderr(color_choice);
     if let Err(e) = stderr.set_color(&color_spec) {
         eprintln!("Error setting terminal color {}", e);
     }
@@ -120,7 +119,7 @@ fn write(stream: &mut StandardStream, s: impl std::fmt::Display) {
 
 fn main() {
     let args: Args = argh::from_env();
-    let mut stderr = make_stderr(&args.color);
+    let mut stderr = make_stderr(args.color.make_color_choice());
     if let Err(e) = run(args) {
         write(&mut stderr, e);
         std::process::exit(1);

@@ -9,8 +9,10 @@ Filetruck uses config files called plans to describe what files should be moved 
 Say we had a plan called `example.yml`
 
 ```yaml
-name: example # Plans are named. This is used as the directory name when storing these files
-files: # List of files. Must be files and not directories.
+# Plans are named. This is used as the directory name when storing these files
+name: example
+# List of files. Must be files and not directories.
+files:
   - .zshrc
   - .config/nvim/init.vim
 ```
@@ -35,3 +37,11 @@ When you want to drop off those files again you can call
 `filetruct --plan example.plan dropoff --to ~`
 
 And the dot files will be copied back to the home directory.
+
+# Installation
+
+`cargo install --path .`
+
+If you want you can add .cargo/bin path to your PATH variable
+
+`export PATH=$PATH:$HOME/.cargo/bin`
