@@ -130,7 +130,6 @@ fn test_drop_off() {
     assert!(res.is_ok());
 }
 
-//tototo
 #[test]
 fn test_drop_off_same_file_doesnt_exist() {
     let plan = Plan {

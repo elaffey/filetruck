@@ -45,3 +45,9 @@ And the dot files will be copied back to the home directory.
 If you want you can add .cargo/bin path to your PATH variable
 
 `export PATH=$PATH:$HOME/.cargo/bin`
+
+# Pre-commit checklist
+
+1. `cargo test`
+2. `touch $(fd --extension rs) && cargo clippy`
+3. `cargo fmt --all`
