@@ -1,13 +1,14 @@
 #![deny(clippy::all)]
+#![warn(clippy::pedantic)]
 
 use argh::FromArgs;
-use std::io::Write;
 use std::path::PathBuf;
-use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+use termcolor::ColorChoice;
 
 use filetruck::commands::{drop_off, pick_up};
 use filetruck::error::Error;
 use filetruck::plan::Plan;
+use filetruck::printer::{Print, Printer};
 
 #[allow(clippy::default_trait_access)]
 #[derive(FromArgs, Debug)]
@@ -90,38 +91,22 @@ struct Args {
     sub_commands: SubCommands,
 }
 
-fn run(args: Args) -> Result<(), Error> {
+fn run(args: Args, stdout: &mut Printer) -> Result<(), Error> {
     let plan = Plan::load(&args.plan)?;
     match args.sub_commands {
-        SubCommands::PickUp(options) => pick_up(&plan, &options.from),
-        SubCommands::DropOff(options) => drop_off(&plan, &options.to),
-    }
-}
-
-fn make_stderr(color_choice: ColorChoice) -> StandardStream {
-    let mut color_spec = ColorSpec::new();
-    color_spec
-        .set_fg(Some(Color::Green))
-        .set_intense(true)
-        .set_bold(true);
-    let mut stderr = StandardStream::stderr(color_choice);
-    if let Err(e) = stderr.set_color(&color_spec) {
-        eprintln!("Error setting terminal color {}", e);
-    }
-    stderr
-}
-
-fn writeln(stream: &mut StandardStream, s: impl std::fmt::Display) {
-    if let Err(e) = writeln!(stream, "{}", s) {
-        eprintln!("Error writing to terminal {}", e);
+        SubCommands::PickUp(options) => pick_up(&plan, &options.from, stdout),
+        SubCommands::DropOff(options) => drop_off(&plan, &options.to, stdout),
     }
 }
 
 fn main() {
     let args: Args = argh::from_env();
-    let mut stderr = make_stderr(args.color.make_color_choice());
-    if let Err(e) = run(args) {
-        writeln(&mut stderr, e);
+    let color_choice = args.color.make_color_choice();
+    let mut stdout = Printer::stdout(color_choice);
+    let mut stderr = Printer::stderr(color_choice);
+    if let Err(e) = run(args, &mut stdout) {
+        stderr.writeln(e);
+        stderr.print();
         std::process::exit(1);
     }
 }

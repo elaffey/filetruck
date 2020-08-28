@@ -3,6 +3,20 @@ use std::path::PathBuf;
 
 use filetruck::commands::{drop_off, pick_up};
 use filetruck::plan::Plan;
+use filetruck::printer::Print;
+
+struct Printer {}
+
+impl Printer {
+    fn new() -> Self {
+        Self {}
+    }
+}
+
+impl Print for Printer {
+    fn writeln(&mut self, _: impl std::fmt::Display) {}
+    fn print(&self) {}
+}
 
 struct TempDir {
     path: PathBuf,
@@ -45,8 +59,9 @@ fn test_pick_up() {
     dir.add_file("a");
     dir.add_file("b");
     dir.add_file("c");
+    let mut stdout = Printer::new();
 
-    let res = pick_up(&plan, &dir.path);
+    let res = pick_up(&plan, &dir.path, &mut stdout);
     assert!(res.is_ok());
     std::fs::remove_dir_all("plan1").unwrap();
 }
@@ -58,8 +73,9 @@ fn test_pick_up_same_file() {
         files: vec![],
     };
     let dir = TempDir::new("plan2");
+    let mut stdout = Printer::new();
 
-    let res = pick_up(&plan, &PathBuf::from(&dir.path));
+    let res = pick_up(&plan, &PathBuf::from(&dir.path), &mut stdout);
     assert!(res.is_err());
     let msg = res.unwrap_err().to_string();
     assert!(msg.starts_with("Input and output are the same"));
@@ -72,8 +88,9 @@ fn test_pick_up_create_dir_error() {
         files: vec![],
     };
     let from = PathBuf::from("anywhere");
+    let mut stdout = Printer::new();
 
-    let res = pick_up(&plan, &from);
+    let res = pick_up(&plan, &from, &mut stdout);
     assert!(res.is_err());
     let msg = res.unwrap_err().to_string();
     assert!(msg.starts_with("Could not create directories"));
@@ -89,8 +106,9 @@ fn test_pick_up_not_a_file() {
     dir.add_file("a");
     dir.add_file("b");
     dir.add_dir("c");
+    let mut stdout = Printer::new();
 
-    let res = pick_up(&plan, &dir.path);
+    let res = pick_up(&plan, &dir.path, &mut stdout);
     assert!(res.is_err());
     let msg = res.unwrap_err().to_string();
     assert!(msg.ends_with("is not a file"));
@@ -106,8 +124,9 @@ fn test_pick_up_error_reading_file() {
     let dir = TempDir::new("pickup3");
     dir.add_file("a");
     dir.add_file("b");
+    let mut stdout = Printer::new();
 
-    let res = pick_up(&plan, &dir.path);
+    let res = pick_up(&plan, &dir.path, &mut stdout);
     assert!(res.is_err());
     let msg = res.unwrap_err().to_string();
     assert!(msg.starts_with("Error reading file"));
@@ -125,8 +144,9 @@ fn test_drop_off() {
     pickup.add_file("b");
     pickup.add_file("c");
     let dropoff = TempDir::new("dropoff1");
+    let mut stdout = Printer::new();
 
-    let res = drop_off(&plan, &dropoff.path);
+    let res = drop_off(&plan, &dropoff.path, &mut stdout);
     assert!(res.is_ok());
 }
 
@@ -137,8 +157,9 @@ fn test_drop_off_same_file_doesnt_exist() {
         files: vec![],
     };
     let from = PathBuf::from("plan7");
+    let mut stdout = Printer::new();
 
-    let res = drop_off(&plan, &from);
+    let res = drop_off(&plan, &from, &mut stdout);
     assert!(res.is_err());
     let msg = res.unwrap_err().to_string();
     assert!(msg.starts_with("One of the following paths could not be opened"));
