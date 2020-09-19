@@ -73,16 +73,31 @@ fn copy_file_name(
     file: &str,
     mut from: PathBuf,
     mut to: PathBuf,
-    stdout: &mut impl Print,
+    copied: &mut Vec<(String, String)>,
 ) -> Result<(), Error> {
     from.push(file);
     to.push(file);
     is_file(&from)?;
     create_parent_dirs(&to)?;
     copy(&from, &to)?;
-    let to_print = format!("{} -> {}", from.display(), to.display());
-    stdout.writeln(to_print);
+    let from_str = from.display().to_string();
+    let to_str = to.display().to_string();
+    copied.push((from_str, to_str));
     Ok(())
+}
+
+fn print_copied(copied: Vec<(String, String)>, stdout: &mut impl Print) {
+    let mut longest_from = 0;
+    for (from, _) in &copied {
+        longest_from = std::cmp::max(longest_from, from.len());
+    }
+    for (from, to) in copied {
+        let num_of_spaces = longest_from - from.len() + 1;
+        let spaces: String = std::iter::repeat(" ").take(num_of_spaces).collect();
+        let to_print = format!("{}{}-> {}", from, spaces, to);
+        stdout.writeln(to_print);
+    }
+    stdout.print();
 }
 
 fn copy_file_names(
@@ -91,10 +106,11 @@ fn copy_file_names(
     to: &PathBuf,
     stdout: &mut impl Print,
 ) -> Result<(), Error> {
+    let mut copied: Vec<(String, String)> = Vec::new();
     for file in files {
-        copy_file_name(file, from.clone(), to.clone(), stdout)?;
+        copy_file_name(file, from.clone(), to.clone(), &mut copied)?;
     }
-    stdout.print();
+    print_copied(copied, stdout);
     Ok(())
 }
 
