@@ -9,6 +9,6 @@ argh = "0.1.4"
 serde = {version = "1.0.117", features = ["derive"]}
 serde_yaml = "0.8.14"
 same-file = "1.0.6"
-termcolor = "1.1.1"
+termcolor = "1.1.2"
 atty = "0.2.14"
 
