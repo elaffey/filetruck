@@ -5,7 +5,7 @@ authors = ["Eamonn Laffey <eamonn.laffey@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-argh = "0.1.5"
+argh = "0.1.6"
 serde = {version = "1.0.130", features = ["derive"]}
 serde_yaml = "0.8.20"
 same-file = "1.0.6"
