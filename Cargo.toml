@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 argh = "0.1.6"
 serde = {version = "1.0.130", features = ["derive"]}
-serde_yaml = "0.8.20"
+serde_yaml = "0.8.21"
 same-file = "1.0.6"
 termcolor = "1.1.2"
 atty = "0.2.14"
